@@ -1,0 +1,23 @@
+{
+  "name": "cgpi-image-processing",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build-vite": "vue-tsc --noEmit && vite build",
+    "build-vue": "vue-cli-service build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "chart.js": "^3.6.0",
+    "vue": "^3.2.22"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^1.9.3",
+    "@vue/cli-plugin-typescript": "^4.5.15",
+    "@vue/cli-service": "^4.5.15",
+    "@vue/compiler-sfc": "^3.2.22",
+    "typescript": "^4.4.3",
+    "vite": "^2.6.14",
+    "vue-tsc": "^0.3.0"
+  }
+}
