@@ -13,8 +13,7 @@ const imgSrc = ref('');
 const imgCanvas = ref();
 const ctx = ref();
 const img = ref();
-const histogramCanvas = ref();
-const histogramCtx = ref();
+// ApexChart canvas reference and object
 const chart = ref();
 const apexChart = ref();
 
@@ -24,7 +23,6 @@ const prop = defineProps<{
 
 onMounted(() => {
     ctx.value = getContext(imgCanvas.value);
-    histogramCtx.value = getContext(histogramCanvas.value);
 })
 
 onUpdated(() => {
@@ -76,30 +74,28 @@ function saveImage(): void {
     link.click();
 }
 
-function saveHistogram(): void {
-    const link = document.createElement('a');
-    link.download = 'histogram.png';
-    link.href = histogramCanvas.value.toDataURL('image/png');
-    link.click();
-}
+// function saveHistogram(): void {
+//     const link = document.createElement('a');
+//     link.download = 'histogram.png';
+//     link.href = histogramCanvas.value.toDataURL('image/png');
+//     link.click();
+// }
 
 // ApexChart.js
 function loadApexChart(): void {
-    const data = getImageData(ctx.value, img.value).data;
-    const red = (new Array(256)).fill(0);
-    const green = (new Array(256)).fill(0);
-    const blue = (new Array(256)).fill(0);
-    const categories = red.map((el, i) => i + 1);
+    // const pixels = getImageData(ctx.value, img.value).data;
+    const pixels = ctx.value.getImageData(0, 0,
+        imgCanvas.value.width, imgCanvas.value.height).data;
+    let red = (new Array(256)).fill(0);
+    let green = (new Array(256)).fill(0);
+    let blue = (new Array(256)).fill(0);
+    let categories = red.map((el, i) => i);
 
     // RGB's histograms
-    for (let i = 0; i < data.length; i += 4) {
-        red[data[i]]++;
-        green[data[i + 1]]++;
-        blue[data[i + 2]]++;
-    }
-
-    for (let i = 0; i < 40; i += 4) {
-        console.log(`R: ${red[i]}, G: ${green[i + 1]}, B: ${blue[i + 2]}`);
+    for (let i = 0; i < pixels.length; i += 4) {
+        red[pixels[i]]++;
+        green[pixels[i + 1]]++;
+        blue[pixels[i + 2]]++;
     }
 
     var options = {
@@ -108,15 +104,26 @@ function loadApexChart(): void {
         },
         series: [
             {
-            name: 'red',
-            data: red
-            }, {
-            name: 'green',
-            data: green
+                name: 'red',
+                data: red
+            },
+            {
+                name: 'green',
+                data: green
+            },
+            {
+                name: 'blue',
+                data: blue
             }
         ],
+        colors: ['#ff0000', '#00ff00', '#0000ff'],
         xaxis: {
             categories: categories
+        },
+        yaxis: {
+            title: {
+                text: 'Quantidade de pixels'
+            }
         }
     }
 
@@ -124,59 +131,6 @@ function loadApexChart(): void {
     options);
 
     apexChart.value.render();
-}
-// Chart.js
-function createChart (): void {
-    const data = histogram(getImageData(ctx.value, img.value).data);
-    const labels = data[0].map((_, i) => i );
-    const redMax = data[0].reduce((a,b) => Math.max(a,b));
-    histogramChart.value = new Chart(histogramCtx.value, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Histograma',
-                data: [...data[0]],
-                backgroundColor: 'gray',
-                borderColor: 'gray',
-                borderWidth: 1,
-                // borderPercent: 1
-            }]
-        },
-        options: {
-            // animation: false,
-            // parsing: false,
-            // plugins: {
-            //     decimation: decimation,
-            // },
-            scales: {
-                x: {
-                    type: 'linear',
-                    min: 0,
-                    max: 255,
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-}
-
-function showHistogram(): void {
-    // const decimation = {
-    //     enable: true,
-    //     algorithm: 'min-max',
-    // }
-    const data = histogram(getImageData(ctx.value, img.value).data);
-    const labels = data[0].map((_, i) => i );
-    const redMax = data[0].reduce((a,b) => Math.max(a,b));
-    if(histogramChart.value === undefined) {
-        createChart();
-    }
-    else {
-        histogramChart.value.data.datasets[0].data = data[0];
-        histogramChart.value.data.labels = labels;
-        histogramChart.value.update();
-    }
 }
 </script>
 
@@ -198,7 +152,7 @@ function showHistogram(): void {
 
         <button class="btn-menu" @click="clearFilters">Limpar filtros</button>
         <button class="btn-menu" @click="saveImage">Salvar imagem</button>
-        <button class="btn-menu" @click="saveHistogram">Salvar histograma</button>
+        <button class="btn-menu" @click="">Salvar histograma</button>
         
         <br>
         <!-- Image Canvas -->
@@ -208,7 +162,6 @@ function showHistogram(): void {
     </div>
     <div id="histogram-container">
         <div id="chart" ref="chart"></div>
-        <canvas ref="histogramCanvas" id="histogram" width="400" height="200"></canvas>
     </div>
 </template>
 
